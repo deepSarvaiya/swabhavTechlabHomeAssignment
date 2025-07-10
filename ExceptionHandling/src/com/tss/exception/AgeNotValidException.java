@@ -1,0 +1,16 @@
+package com.tss.exception;
+
+public class AgeNotValidException extends RuntimeException{
+	
+	private int age;
+
+	public AgeNotValidException(int age) {
+		this.age = age;
+	}
+	
+	public String getMessage()
+	{
+		return "Age Not Valid: You have Entered: "+age;
+	}
+}
+	
