@@ -3,23 +3,30 @@ package com.foodordering.model;
 import java.io.Serializable;
 
 public class FoodItem implements Serializable {
-    private int id;
+    private String id; 
     private String name;
     private double price;
     private int quantity;
-    public FoodItem(int id, String name, double price, int quantity) {
+    private String menuType; 
+
+    public FoodItem(String id, String name, double price, int quantity, String menuType) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
+        this.menuType = menuType;
     }
 
-    public FoodItem(int id, String name, double price) {
-        this(id, name, price, 1);
+    public FoodItem(String id, String name, double price, String menuType) {
+        this(id, name, price, 1, menuType);
     }
 
-    public int getId() {
+    public String getId() {
         return id;
+    }
+
+    public String getMenuType() {
+        return menuType;
     }
 
     public String getName() {
@@ -40,6 +47,6 @@ public class FoodItem implements Serializable {
 
     @Override
     public String toString() {
-        return id + ". " + name + " - ₹" + price + " (" + quantity + " pcs)";
+        return id + ". " + name + " - ₹" + price + " (" + quantity + " pcs, " + menuType + ")";
     }
 }

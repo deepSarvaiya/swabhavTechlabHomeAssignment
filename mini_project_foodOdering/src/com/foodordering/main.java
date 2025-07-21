@@ -3,12 +3,19 @@ package com.foodordering;
 import java.util.Scanner;
 import com.foodordering.admin.IAdminService;
 import com.foodordering.admin.AdminServiceImpl;
+import com.foodordering.admin.AdminServiceProxy;
 import com.foodordering.customer.ICustomerService;
 import com.foodordering.customer.CustomerServiceImpl;
 
+// after review 
+// used the Proxy Design Pattern to make admin login more secure.
+// coupon codes for extra savings and improved the invoice display.
+//added menu categories 
+//flexible discount 
+
 public class main {
 	private static final Scanner sc = new Scanner(System.in);
-	private static final IAdminService adminService = new AdminServiceImpl();
+	private static final IAdminService adminService = new AdminServiceProxy(new AdminServiceImpl());
 	private static final ICustomerService customerService = new CustomerServiceImpl();
 
 	public static void main(String[] args) {

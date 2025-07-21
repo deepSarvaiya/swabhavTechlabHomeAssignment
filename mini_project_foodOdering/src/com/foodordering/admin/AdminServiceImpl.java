@@ -64,7 +64,7 @@ public class AdminServiceImpl implements IAdminService {
 	    int choice;
 	    do {
 	        System.out.println("\n======= Manage Discount =======");
-	        System.out.println("1. View Current Discount Percentage");
+	        System.out.printf("1. View Current Discount (%.2f%% on orders above ₹%.2f)\n", MenuServiceImpl.getDiscountPercentage(), MenuServiceImpl.getDiscountMinOrder());
 	        System.out.println("2. Edit Discount");
 	        System.out.println("3. Back");
 	        System.out.print("Enter your choice: ");
@@ -73,15 +73,18 @@ public class AdminServiceImpl implements IAdminService {
 	        switch (choice) {
 	            case 1 -> {
 	                double currentDiscount = MenuServiceImpl.getDiscountPercentage();
-	                System.out.printf("Current Discount: %.2f%% (applied on orders above ₹500)%n", currentDiscount);
+	                double minOrder = MenuServiceImpl.getDiscountMinOrder();
+	                System.out.printf("Current Discount: %.2f%% (applied on orders above ₹%.2f)%n", currentDiscount, minOrder);
 	            }
 	            case 2 -> {
 	                System.out.print("Enter new discount percentage: ");
 	                double newDiscount = sc.nextDouble();
-	                if (newDiscount >= 0 && newDiscount <= 100) {
-	                    menuService.setDiscountPercentage(newDiscount);
+	                System.out.print("Enter new minimum order value for discount: ");
+	                double newMinOrder = sc.nextDouble();
+	                if (newDiscount >= 0 && newDiscount <= 100 && newMinOrder >= 0) {
+	                    menuService.setDiscount(newDiscount, newMinOrder);
 	                } else {
-	                    System.out.println("Invalid discount. Please enter a value between 0 and 100.");
+	                    System.out.println("Invalid input. Please enter valid values.");
 	                }
 	            }
 	            case 3 -> System.out.println("Returning to admin dashboard...");
@@ -93,7 +96,7 @@ public class AdminServiceImpl implements IAdminService {
 	
 
 	private void handleAgentManagement() {
-	    DeliveryService deliveryService = new DeliveryService();  // Ideally should be shared or injected
+	    DeliveryService deliveryService = new DeliveryService(); 
 	    int choice;
 	    do {
 	        System.out.println("\n--- Manage Delivery Agents ---");

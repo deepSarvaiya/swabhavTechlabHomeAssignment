@@ -13,6 +13,8 @@ public interface IMenuService {
 	List<FoodItem> getMenu();
 	
 	void setDiscountPercentage(double percent);
+
+	void setDiscount(double newDiscount, double newMinOrder);
 	
 	
 }

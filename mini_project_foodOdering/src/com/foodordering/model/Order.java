@@ -6,18 +6,22 @@ import java.util.Map;
 public class Order implements Serializable {
     private Map<FoodItem, Integer> itemsWithQuantity;
     private double totalAmount;
-    private double discount;
+    private double regularDiscount;
+    private double couponDiscount;
+    private String couponCode;
     private double finalAmount;
     private String paymentMode;
     private String deliveryAgent;
 
-    public Order(Map<FoodItem, Integer> itemsWithQuantity, double totalAmount, double discount, double finalAmount,
-                 String paymentMode, String deliveryAgent) {
+    public Order(Map<FoodItem, Integer> itemsWithQuantity, double totalAmount, double regularDiscount, double couponDiscount, double finalAmount,
+                 String paymentMode, String couponCode, String deliveryAgent) {
         this.itemsWithQuantity = itemsWithQuantity;
         this.totalAmount = totalAmount;
-        this.discount = discount;
+        this.regularDiscount = regularDiscount;
+        this.couponDiscount = couponDiscount;
         this.finalAmount = finalAmount;
         this.paymentMode = paymentMode;
+        this.couponCode = couponCode;
         this.deliveryAgent = deliveryAgent;
     }
 
@@ -29,8 +33,16 @@ public class Order implements Serializable {
         return totalAmount;
     }
 
-    public double getDiscount() {
-        return discount;
+    public double getRegularDiscount() {
+        return regularDiscount;
+    }
+
+    public double getCouponDiscount() {
+        return couponDiscount;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
     }
 
     public double getFinalAmount() {
@@ -62,12 +74,20 @@ public class Order implements Serializable {
         System.out.println("----------------------------------------");
         System.out.printf("%-30s ₹%8.2f\n", "Total Amount:", totalAmount);
 
-        if (discount > 0.0) {
-            System.out.printf("%-30s ₹%8.2f\n", "Discount Applied:", discount);
-            System.out.printf("%-30s ₹%8.2f\n", "Final Payable Amount:", finalAmount);
-        } else {
-            System.out.printf("%-30s ₹%8.2f\n", "Final Payable Amount:", totalAmount);
+        if (regularDiscount > 0.0) {
+            System.out.printf("%-30s ₹%8.2f\n", "Regular Discount:", regularDiscount);
         }
+        if (couponDiscount > 0.0) {
+            System.out.printf("%-30s ₹%8.2f\n", "Coupon Discount:", couponDiscount);
+            if (couponCode != null && !couponCode.isEmpty()) {
+                System.out.printf("%-30s %s\n", "Coupon Code Used:", couponCode);
+            }
+        }
+        double totalDiscount = regularDiscount + couponDiscount;
+        if (totalDiscount > 0.0) {
+            System.out.printf("%-30s ₹%8.2f\n", "Total Discount:", totalDiscount);
+        }
+        System.out.printf("%-30s ₹%8.2f\n", "Final Payable Amount:", finalAmount);
 
         System.out.println("----------------------------------------");
         System.out.printf("%-30s %s\n", "Payment Mode:", paymentMode);

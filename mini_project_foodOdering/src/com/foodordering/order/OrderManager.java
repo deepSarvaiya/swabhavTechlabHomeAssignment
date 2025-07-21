@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import com.foodordering.delivery.DeliveryService;
 import com.foodordering.food.MenuServiceImpl;
@@ -15,11 +16,12 @@ import com.foodordering.payment.PaymentProcessor;
 public class OrderManager {
     private static final List<CartItem> cart = new ArrayList<>();
 
-    public static void addToCart(int itemId, int quantity) {
-        List<FoodItem> menu = new MenuServiceImpl().getMenu();
-
-        for (FoodItem item : menu) {
-            if (item.getId() == itemId) {
+    public static void addToCart(String itemId, int quantity, String menuType) {
+        MenuServiceImpl menuService = new MenuServiceImpl();
+        menuService.loadMenu(menuType);
+        List<FoodItem> menuItems = menuService.getMenu();
+        for (FoodItem item : menuItems) {
+            if (item.getId().equals(itemId)) {
                 cart.add(new CartItem(item, quantity));
                 System.out.println("\nItem added to cart.");
                 return;
@@ -52,13 +54,24 @@ public class OrderManager {
         System.out.println("Use removeFromCart(itemId) to remove an item.\n");
     }
 
-    public static void removeFromCart(int itemId) {
-        boolean removed = cart.removeIf(cartItem -> cartItem.getItem().getId() == itemId);
-        if (removed) {
-            System.out.println("\n Item removed from cart.");
-        } else {
-            System.out.println("\n Item not found in cart.");
+    public static void removeFromCart(String itemId, int quantity) {
+        for (int i = 0; i < cart.size(); i++) {
+            CartItem cartItem = cart.get(i);
+            if (cartItem.getItem().getId().equals(itemId)) {
+                if (quantity > cartItem.getQuantity()) {
+                    System.out.println("\nYou have only " + cartItem.getQuantity() + " quantity in the cart.");
+                    return;
+                } else if (quantity == cartItem.getQuantity()) {
+                    cart.remove(i);
+                    System.out.println("\nAll quantities of the item removed from cart.");
+                } else {
+                    cartItem.setQuantity(cartItem.getQuantity() - quantity);
+                    System.out.println("\n" + quantity + " quantity removed from cart. Remaining: " + cartItem.getQuantity());
+                }
+                return;
+            }
         }
+        System.out.println("\nItem not found in cart.");
     }
 
     public static void placeOrder(String username) {
@@ -70,17 +83,49 @@ public class OrderManager {
         double total = cart.stream().mapToDouble(CartItem::getSubtotal).sum();
         PaymentProcessor processor = new PaymentProcessor();
 
-        if (processor.processPayment(total)) {
-            double discount = 0;
-            double finalAmount = total;
-            String paymentMode = "Regular";
-
-            if (total > 500) {
-                discount = total * MenuServiceImpl.getDiscountPercentage() / 100.0;
-                finalAmount = total - discount;
-                paymentMode = "Discounted";
+        //  random coupon to the user
+        String randomCoupon = MenuServiceImpl.getRandomCoupon();
+        System.out.println("\nHere is a coupon you can use: " + randomCoupon);
+        System.out.print("Enter coupon code to apply (or press Enter to skip): ");
+        Scanner sc = new Scanner(System.in);
+        String couponCode = sc.nextLine().trim();
+        double couponDiscountPercent = 0;
+        if (!couponCode.isEmpty()) {
+            couponDiscountPercent = MenuServiceImpl.getCouponDiscount(couponCode);
+            if (couponDiscountPercent > 0) {
+                System.out.println("Coupon applied: " + couponCode + " (" + couponDiscountPercent + "% OFF)");
+            } else {
+                System.out.println("Invalid coupon code. No coupon discount applied.");
+                couponCode = "";
             }
+        }
 
+        // Calculate discounts before payment
+        double regularDiscount = 0;
+        double afterRegularDiscount = total;
+        String paymentMode = "Regular";
+        if (total >= MenuServiceImpl.getDiscountMinOrder()) {
+            regularDiscount = total * MenuServiceImpl.getDiscountPercentage() / 100.0;
+            afterRegularDiscount = total - regularDiscount;
+            paymentMode = "Discounted";
+        }
+        double couponAmount = 0;
+        if (couponDiscountPercent > 0) {
+            couponAmount = afterRegularDiscount * couponDiscountPercent / 100.0;
+        }
+        double finalAmount = afterRegularDiscount - couponAmount;
+        double totalDiscount = regularDiscount + couponAmount;
+
+        // Show  before payment
+        if (regularDiscount > 0)
+            System.out.printf("Regular discount applied: ₹%.2f (%.1f%%)\n", regularDiscount, MenuServiceImpl.getDiscountPercentage());
+        if (couponAmount > 0)
+            System.out.printf("Coupon discount applied: ₹%.2f (%.1f%%)\n", couponAmount, couponDiscountPercent);
+        if (totalDiscount > 0)
+            System.out.printf("Total discount: ₹%.2f\n", totalDiscount);
+        System.out.printf("Final amount to pay: ₹%.2f\n", finalAmount);
+
+        if (processor.processPayment(finalAmount)) {
             DeliveryService deliveryService = new DeliveryService();
             String deliveryAgent = deliveryService.assignAgent();
 
@@ -89,7 +134,7 @@ public class OrderManager {
                 orderedItems.put(cartItem.getItem(), cartItem.getQuantity());
             }
 
-            Order order = new Order(orderedItems, total, discount, finalAmount, paymentMode, deliveryAgent);
+            Order order = new Order(orderedItems, total, regularDiscount, couponAmount, finalAmount, paymentMode, couponCode, deliveryAgent);
             order.printInvoice();
             cart.clear();
         }

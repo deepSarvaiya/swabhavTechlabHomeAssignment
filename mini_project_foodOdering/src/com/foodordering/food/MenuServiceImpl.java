@@ -6,38 +6,95 @@ import com.foodordering.util.Serializer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Random;
+import java.util.Map;
+import java.util.HashMap;
 
 public class MenuServiceImpl implements IMenuService {
-    private static final String MENU_FILE = "menu.ser";
+    private static final String MENU_FILE_GU = "menu_gujarati.ser";
+    private static final String MENU_FILE_PU = "menu_punjabi.ser";
+    private static final String MENU_FILE_CH = "menu_chinese.ser";
+    private static final String MENU_FILE_SO = "menu_southindian.ser";
     private List<FoodItem> menu;
+    private String currentMenuType;
     private final Scanner sc = new Scanner(System.in);
 
-    private static int nextId = 1;
     private static double discountPercentage = 10.0; // default 10%
+    private static double discountMinOrder = 500.0; // default min order for discount
 
-    private int generateId() {
-        return nextId++;
+    private static final Map<String, Double> COUPONS = new HashMap<>() {{
+        put("SAVE10", 10.0);
+        put("FOOD20", 20.0);
+        put("LUNCH15", 15.0);
+        put("DINNER5", 5.0);
+    }};
+    private static final String[] COUPON_CODES = {"SAVE10", "FOOD20", "LUNCH15", "DINNER5"};
+    private static final Random random = new Random();
+
+    public static String getRandomCoupon() {
+        int idx = random.nextInt(COUPON_CODES.length);
+        String code = COUPON_CODES[idx];
+        return code + " (" + COUPONS.get(code) + "% OFF)";
+    }
+
+    public static double getCouponDiscount(String code) {
+        return COUPONS.getOrDefault(code, 0.0);
+    }
+
+    private String getMenuFile(String menuType) {
+        return switch (menuType) {
+            case "GU" -> MENU_FILE_GU;
+            case "PU" -> MENU_FILE_PU;
+            case "CH" -> MENU_FILE_CH;
+            case "SO" -> MENU_FILE_SO;
+            default -> MENU_FILE_GU;
+        };
+    }
+
+    public String menuTypePrompt() {
+        System.out.println("Select Menu Type:");
+        System.out.println("1. Gujarati");
+        System.out.println("2. Punjabi");
+        System.out.println("3. Chinese");
+        System.out.println("4. South Indian");
+        System.out.print("Enter choice: ");
+        int choice = sc.nextInt();
+        sc.nextLine();
+        return switch (choice) {
+            case 1 -> "GU";
+            case 2 -> "PU";
+            case 3 -> "CH";
+            case 4 -> "SO";
+            default -> "GU";
+        };
+    }
+
+    public void loadMenu(String menuType) {
+        menu = Serializer.deserialize(getMenuFile(menuType));
+        if (menu == null) menu = new ArrayList<>();
+        currentMenuType = menuType;
+    }
+
+    private void saveMenu() {
+        Serializer.serialize(menu, getMenuFile(currentMenuType));
+    }
+
+    private String generateId(String menuType) {
+        int max = 0;
+        for (FoodItem item : menu) {
+            if (item.getId().startsWith(menuType)) {
+                try {
+                    int num = Integer.parseInt(item.getId().substring(2));
+                    if (num > max) max = num;
+                } catch (Exception ignored) {}
+            }
+        }
+        return menuType + (max + 1);
     }
 
     public MenuServiceImpl() {
-        menu = Serializer.deserialize(MENU_FILE);
-        if (menu == null || menu.isEmpty()) {
-            menu = new ArrayList<>();
-
-            // Default 10 food items
-            menu.add(new FoodItem(generateId(), "Khaman Dhokla (Gujarati)", 50));
-            menu.add(new FoodItem(generateId(), "Undhiyu (Gujarati)", 130));
-            menu.add(new FoodItem(generateId(), "Thepla with Pickle (Gujarati)", 40));
-            menu.add(new FoodItem(generateId(), "Dal Dhokli (Gujarati)", 90));
-            menu.add(new FoodItem(generateId(), "Chole Bhature (Punjabi)", 120));
-            menu.add(new FoodItem(generateId(), "Rajma Chawal (Punjabi)", 110));
-            menu.add(new FoodItem(generateId(), "Paratha (Punjabi)", 140));
-            menu.add(new FoodItem(generateId(), "Paneer Tikka Masala (Punjabi)", 150));
-            menu.add(new FoodItem(generateId(), "Lassi (Punjabi)", 50));
-            menu.add(new FoodItem(generateId(), "Basundi (Gujarati Dessert)", 60));
-
-            Serializer.serialize(menu, MENU_FILE);
-        }
+        // Default: load Gujarati menu
+        loadMenu("GU");
     }
 
     @Override
@@ -47,6 +104,8 @@ public class MenuServiceImpl implements IMenuService {
 
     @Override
     public void viewMenu() {
+        String menuType = menuTypePrompt();
+        loadMenu(menuType);
         System.out.println("\n╔════════════════════════════════════════╗");
         System.out.println("║                 FOOD MENU              ║");
         System.out.println("╚════════════════════════════════════════╝");
@@ -56,24 +115,24 @@ public class MenuServiceImpl implements IMenuService {
             return;
         }
 
-        System.out.printf("%-5s %-35s %s\n", "ID", "Name", "Price (₹)");
+        System.out.printf("%-7s %-35s %s\n", "ID", "Name", "Price (₹)");
         System.out.println("------------------------------------------------------");
 
         for (FoodItem item : menu) {
-            System.out.printf("%-5d %-35s ₹%.2f\n", item.getId(), item.getName(), item.getPrice());
+            System.out.printf("%-7s %-35s ₹%.2f\n", item.getId(), item.getName(), item.getPrice());
         }
     }
 
     @Override
     public void removeItem() {
+        String menuType = menuTypePrompt();
+        loadMenu(menuType);
         viewMenu();
         System.out.print("\nEnter item ID to remove: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-
-        boolean removed = menu.removeIf(item -> item.getId() == id);
+        String id = sc.nextLine();
+        boolean removed = menu.removeIf(item -> item.getId().equals(id));
         if (removed) {
-            Serializer.serialize(menu, MENU_FILE);
+            saveMenu();
             System.out.println("\nItem removed successfully.");
         } else {
             System.out.println("\nItem not found. Please try again.");
@@ -84,13 +143,20 @@ public class MenuServiceImpl implements IMenuService {
         return discountPercentage;
     }
 
-    public void setDiscountPercentage(double percent) {
+    public static double getDiscountMinOrder() {
+        return discountMinOrder;
+    }
+
+    public void setDiscount(double percent, double minOrder) {
         discountPercentage = percent;
-        System.out.println("\nDiscount set to " + percent + "% on orders above ₹500.");
+        discountMinOrder = minOrder;
+        System.out.println("\nDiscount set to " + percent + "% on orders above ₹" + minOrder + ".");
     }
 
     @Override
     public void addItem() {
+        String menuType = menuTypePrompt();
+        loadMenu(menuType);
         System.out.println("\n╔════════════════════════════╗");
         System.out.println("║       ADD NEW FOOD ITEM    ║");
         System.out.println("╚════════════════════════════╝");
@@ -102,11 +168,16 @@ public class MenuServiceImpl implements IMenuService {
         double price = sc.nextDouble();
         sc.nextLine();
 
-        int id = generateId();
-        FoodItem newItem = new FoodItem(id, name, price);
+        String id = generateId(menuType);
+        FoodItem newItem = new FoodItem(id, name, price, menuType);
         menu.add(newItem);
 
-        Serializer.serialize(menu, MENU_FILE);
+        saveMenu();
         System.out.println("\nItem added successfully!");
+    }
+
+    @Override
+    public void setDiscountPercentage(double percent) {
+        setDiscount(percent, discountMinOrder);
     }
 }

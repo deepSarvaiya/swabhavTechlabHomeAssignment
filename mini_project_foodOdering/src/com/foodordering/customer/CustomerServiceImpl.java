@@ -91,14 +91,16 @@ public class CustomerServiceImpl implements ICustomerService {
 				break;
 
 			case 2:
+				System.out.println("Select Menu Type to Add Item From:");
+				String menuTypeAdd = ((MenuServiceImpl) menuService).menuTypePrompt();
+				((MenuServiceImpl) menuService).loadMenu(menuTypeAdd);
+				menuService.viewMenu();
 				System.out.print("Enter food item ID to add to cart: ");
-				int itemId = sc.nextInt();
-				sc.nextLine();
-
+				String itemId = sc.nextLine();
 				System.out.print("Enter Quantity: ");
 				int quantity = sc.nextInt();
 				sc.nextLine();
-				OrderManager.addToCart(itemId, quantity);
+				OrderManager.addToCart(itemId, quantity, menuTypeAdd);
 				break;
 
 			case 3:
@@ -109,10 +111,16 @@ public class CustomerServiceImpl implements ICustomerService {
 				OrderManager.placeOrder(username);
 				break;
 			case 5:
+				System.out.println("Select Menu Type to Remove Item From:");
+				String menuTypeRm = ((MenuServiceImpl) menuService).menuTypePrompt();
+				((MenuServiceImpl) menuService).loadMenu(menuTypeRm);
+				menuService.viewMenu();
 				System.out.print("Enter food item ID to Remove from cart: ");
-				int itemRmId = sc.nextInt();
+				String itemRmId = sc.nextLine();
+				System.out.print("Enter quantity to remove: ");
+				int qtyToRemove = sc.nextInt();
 				sc.nextLine();
-				OrderManager.removeFromCart(itemRmId);
+				OrderManager.removeFromCart(itemRmId, qtyToRemove);
 				break;
 			case 6:
 				System.out.println("Logged out successfully.");
