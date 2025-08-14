@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Registration Form</title>
+</head>
+<body>
+    <h2>User Registration</h2>
+    <form action="RegisterController" method="post">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label>Address:</label><br>
+        <textarea name="address" rows="4" cols="30" required></textarea><br><br>
+
+        <label>Gender:</label><br>
+        <input type="radio" name="gender" value="Male" required> Male
+        <input type="radio" name="gender" value="Female" required> Female<br><br>
+
+        <label>City:</label><br>
+        <select name="city" required>
+            <option value="">--Select--</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Pune">Pune</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Ahmedabad">Ahmedabad</option>
+        </select><br><br>
+
+        <label>Languages Known:</label><br>
+        <input type="checkbox" name="languages" value="Marathi"> Marathi<br>
+        <input type="checkbox" name="languages" value="Hindi"> Hindi<br>
+        <input type="checkbox" name="languages" value="Gujarati"> Gujarati<br>
+        <input type="checkbox" name="languages" value="English"> English<br><br>
+
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Confirm Password:</label><br>
+        <input type="password" name="confirmPassword" required><br><br>
+
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>

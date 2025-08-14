@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+    <display-name>Leave Request Application</display-name>
+    
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
+    
+    <!-- Session Configuration -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    
+    <!-- MIME Types -->
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+    
+    <mime-mapping>
+        <extension>js</extension>
+        <mime-type>application/javascript</mime-type>
+    </mime-mapping>
+    
+    <mime-mapping>
+        <extension>png</extension>
+        <mime-type>image/png</mime-type>
+    </mime-mapping>
+    
+    <mime-mapping>
+        <extension>jpg</extension>
+        <mime-type>image/jpeg</mime-type>
+    </mime-mapping>
+    
+    <mime-mapping>
+        <extension>gif</extension>
+        <mime-type>image/gif</mime-type>
+    </mime-mapping>
+    
+    <mime-mapping>
+        <extension>svg</extension>
+        <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
+    
+    <!-- Application Context -->
+    <context-param>
+        <param-name>applicationName</param-name>
+        <param-value>Leave Request Management System</param-value>
+    </context-param>
+    
+    <context-param>
+        <param-name>version</param-name>
+        <param-value>1.0.0</param-value>
+    </context-param>
+    
+</web-app>

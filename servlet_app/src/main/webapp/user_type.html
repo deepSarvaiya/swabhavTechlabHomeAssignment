@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Select User Type</title>
+</head>
+<body>
+    <h2>User Login</h2>
+    <form action="UserTypeController" method="post">
+        Name: <input type="text" name="userName" required><br><br>
+        <label><input type="radio" name="userType" value="customer" required> Customer</label><br>
+        <label><input type="radio" name="userType" value="admin"> Admin</label><br><br>
+        <button type="submit">Continue</button>
+    </form>
+</body>
+</html>
